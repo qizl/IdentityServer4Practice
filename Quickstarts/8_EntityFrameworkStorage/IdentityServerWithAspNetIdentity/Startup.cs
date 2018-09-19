@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using System.Reflection;
 
 namespace IdentityServerWithAspNetIdentity
 {
@@ -24,8 +25,8 @@ namespace IdentityServerWithAspNetIdentity
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
-            
+                options.UseSqlServer(Configuration.GetConnectionString("ApplicationUserConnection")));
+
             services.AddIdentity<ApplicationUser, IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
@@ -33,13 +34,39 @@ namespace IdentityServerWithAspNetIdentity
             services.AddMvc();
 
             // configure identity server with in-memory stores, keys, clients and scopes
+            //services.AddIdentityServer()
+            //    .AddDeveloperSigningCredential()
+            //    .AddInMemoryPersistedGrants()
+            //    .AddInMemoryIdentityResources(Config.GetIdentityResources())
+            //    .AddInMemoryApiResources(Config.GetApiResources())
+            //    .AddInMemoryClients(Config.GetClients())
+            //    .AddAspNetIdentity<ApplicationUser>();
+
+            var connectionString = Configuration.GetConnectionString("IdentityServerConnection");
+            var migrationsAssembly = typeof(Startup).GetTypeInfo().Assembly.GetName().Name;
+
+            // configure identity server with in-memory stores, keys, clients and scopes
             services.AddIdentityServer()
                 .AddDeveloperSigningCredential()
-                .AddInMemoryPersistedGrants()
-                .AddInMemoryIdentityResources(Config.GetIdentityResources())
-                .AddInMemoryApiResources(Config.GetApiResources())
-                .AddInMemoryClients(Config.GetClients())
-                .AddAspNetIdentity<ApplicationUser>();
+                .AddTestUsers(Config.GetUsers())
+                // this adds the config data from DB (clients, resources)
+                .AddConfigurationStore(options =>
+                {
+                    options.ConfigureDbContext = builder =>
+                        builder.UseSqlServer(connectionString,
+                            sql => sql.MigrationsAssembly(migrationsAssembly));
+                })
+                // this adds the operational data from DB (codes, tokens, consents)
+                .AddOperationalStore(options =>
+                {
+                    options.ConfigureDbContext = builder =>
+                        builder.UseSqlServer(connectionString,
+                            sql => sql.MigrationsAssembly(migrationsAssembly));
+
+                    // this enables automatic token cleanup. this is optional.
+                    options.EnableTokenCleanup = true;
+                    options.TokenCleanupInterval = 30;
+                });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -57,12 +84,12 @@ namespace IdentityServerWithAspNetIdentity
             }
 
             //app.UseHttpsRedirection();
-            app.UseStaticFiles();
             //app.UseCookiePolicy();
 
             //app.UseAuthentication();
             app.UseIdentityServer();
 
+            app.UseStaticFiles();
             app.UseMvc(routes =>
             {
                 routes.MapRoute(
