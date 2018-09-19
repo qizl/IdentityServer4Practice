@@ -13,9 +13,12 @@ namespace QuickstartIdentityServer
             // configure identity server with in-memory stores, keys, clients and scopes
             services.AddIdentityServer()
                 .AddDeveloperSigningCredential()
+                .AddInMemoryIdentityResources(Config.GetIdentityResourceResources())
                 .AddInMemoryApiResources(Config.GetApiResources())
                 .AddInMemoryClients(Config.GetClients())
-                .AddTestUsers(Config.GetUsers());
+                .AddTestUsers(Config.GetUsers())
+                .AddProfileService<CustomProfileService>()
+                .AddResourceOwnerValidator<CustomResourceOwnerPasswordValidator>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

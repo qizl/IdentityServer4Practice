@@ -45,17 +45,17 @@ namespace ResourceOwnerClient
                 Console.WriteLine(JArray.Parse(content));
             }
 
-            response = await client.GetAsync("http://localhost:5001/identity/1");
-            if (!response.IsSuccessStatusCode)
-            {
-                Console.WriteLine(response.StatusCode);
-                Console.WriteLine("没有权限访问 http://localhost:5001/identity/1");
-            }
-            else
-            {
-                var content = response.Content.ReadAsStringAsync().Result;
-                Console.WriteLine(content);
-            }
+            //response = await client.GetAsync("http://localhost:5001/identity/1");
+            //if (!response.IsSuccessStatusCode)
+            //{
+            //    Console.WriteLine(response.StatusCode);
+            //    Console.WriteLine("没有权限访问 http://localhost:5001/identity/1");
+            //}
+            //else
+            //{
+            //    var content = response.Content.ReadAsStringAsync().Result;
+            //    Console.WriteLine(content);
+            //}
         }
     }
 }
