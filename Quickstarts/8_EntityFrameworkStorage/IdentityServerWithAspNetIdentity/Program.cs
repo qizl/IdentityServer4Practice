@@ -9,7 +9,7 @@ namespace IdentityServerWithAspNetIdentity
         {
             var host = CreateWebHostBuilder(args).Build();
 
-            //Data.Migrations.IdentityServer.SeedData.EnsureSeedData(host.Services);
+            Data.Migrations.IdentityServer.SeedData.EnsureSeedData(host.Services);
 
             host.Run();
         }

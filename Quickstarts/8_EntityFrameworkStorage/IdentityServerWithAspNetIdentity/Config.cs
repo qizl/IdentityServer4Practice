@@ -22,7 +22,8 @@ namespace IdentityServerWithAspNetIdentity
         {
             return new List<ApiResource>
             {
-                new ApiResource("api1", "My API")
+                new ApiResource("api1", "My API"){ Scopes= { new Scope("api1.read")} },
+                new ApiResource("api2", "My API2"){ Scopes= { new Scope("api2.read"),new Scope("api2.write")} }
             };
         }
 
@@ -46,14 +47,35 @@ namespace IdentityServerWithAspNetIdentity
                         new Secret("secret".Sha256())
                     },
 
-                    RedirectUris = { "http://localhost:5002/signin-oidc" },
-                    PostLogoutRedirectUris = { "http://localhost:5002/signout-callback-oidc" },
+                    RedirectUris = { "http://localhost:5000/signin-oidc" },
+                    PostLogoutRedirectUris = { "http://localhost:5000/signout-callback-oidc" },
 
                     AllowedScopes =
                     {
                         IdentityServerConstants.StandardScopes.OpenId,
                         IdentityServerConstants.StandardScopes.Profile,
-                        "api1"
+                        "api1.read",
+                        "api2"
+                    },
+                    AllowOfflineAccess = true
+                },
+                new Client{ 
+                    ClientId="peek",
+                    ClientName="chongya pc client",
+                    AllowedGrantTypes= GrantTypes.ResourceOwnerPassword,
+
+                    ClientSecrets =
+                    {
+                        new Secret("secret".Sha256())
+                    },
+
+                    AllowedScopes =
+                    {
+                        IdentityServerConstants.StandardScopes.OpenId,
+                        IdentityServerConstants.StandardScopes.Profile,
+                        "api2",
+                        "api2.read",
+                        "api2,write"
                     },
                     AllowOfflineAccess = true
                 }
